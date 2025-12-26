@@ -1,0 +1,21 @@
+{
+  "name": "School Attendance Portal",
+  "short_name": "Attendance",
+  "description": "Parent portal for monitoring student attendance and academic progress.",
+  "start_url": "/login.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/gietlogo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/gietlogo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Student Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .filter-tab {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-weight: 600;
+        }
+
+        .notification-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .notification-card.unread {
+            border-left: 4px solid #667eea;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .notification-time {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        .notification-content {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .action-btn.delete {
+            background: rgba(244, 67, 54, 0.8);
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(244, 67, 54, 1);
+        }
+
+        .priority-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .priority-high {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .priority-medium {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .priority-low {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            opacity: 0.7;
+        }
+
+        .empty-state .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+
+        <div class="header">
+            <h1>🔔 Notifications</h1>
+            <p>Stay updated with important announcements and messages</p>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterNotifications('all')">All</button>
+            <button class="filter-tab" onclick="filterNotifications('unread')">Unread</button>
+            <button class="filter-tab" onclick="filterNotifications('academic')">Academic</button>
+            <button class="filter-tab" onclick="filterNotifications('events')">Events</button>
+        </div>
+
+        <div id="notificationsContainer">
+            <!-- Notifications will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+        let notifications = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+        });
+
+        function loadNotifications() {
+            // Mock notifications data - in real app, this would come from API
+            notifications = [
+                {
+                    id: 1,
+                    title: 'Mathematics Quiz Results',
+                    content: 'Your Mathematics quiz results are now available. You scored 92% on the recent calculus quiz. Great job!',
+                    time: '2 hours ago',
+                    type: 'academic',
+                    priority: 'high',
+                    read: false
+                },
+                {
+                    id: 2,
+                    title: 'Physics Lab Schedule Change',
+                    content: 'Due to maintenance work, the Physics lab session scheduled for tomorrow has been moved to next week.',
+                    time: '1 day ago',
+                    type: 'academic',
+                    priority: 'medium',
+                    read: false
+                },
+                {
+                    id: 3,
+                    title: 'Annual Science Fair Registration',
+                    content: 'Registration for the Annual Science Fair is now open. Submit your project proposals by March 15th.',
+                    time: '2 days ago',
+                    type: 'events',
+                    priority: 'high',
+                    read: true
+                },
+                {
+                    id: 4,
+                    title: 'Library Book Return Reminder',
+                    content: 'You have 3 books due for return this week. Please return them to avoid late fees.',
+                    time: '3 days ago',
+                    type: 'academic',
+                    priority: 'low',
+                    read: true
+                },
+                {
+                    id: 5,
+                    title: 'Sports Day 2024',
+                    content: 'Sports Day will be held on March 20th. All students are required to participate in at least one event.',
+                    time: '1 week ago',
+                    type: 'events',
+                    priority: 'medium',
+                    read: true
+                },
+                {
+                    id: 6,
+                    title: 'Computer Science Project Deadline',
+                    content: 'The final project submission deadline has been extended to March 25th. Make sure to submit on time.',
+                    time: '1 week ago',
+                    type: 'academic',
+                    priority: 'high',
+                    read: false
+                }
+            ];
+
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '';
+
+            let filteredNotifications = notifications;
+
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'unread') {
+                    filteredNotifications = notifications.filter(n => !n.read);
+                } else {
+                    filteredNotifications = notifications.filter(n => n.type === currentFilter);
+                }
+            }
+
+            if (filteredNotifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <h3>No notifications found</h3>
+                        <p>You don't have any ${currentFilter} notifications at the moment.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredNotifications.forEach(notification => {
+                const card = document.createElement('div');
+                card.className = `notification-card ${!notification.read ? 'unread' : ''}`;
+
+                card.innerHTML = `
+                    <div class="priority-badge priority-${notification.priority}">
+                        ${notification.priority.toUpperCase()}
+                    </div>
+                    <div class="notification-header">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-time">${notification.time}</div>
+                    </div>
+                    <div class="notification-content">${notification.content}</div>
+                    <div class="notification-actions">
+                        ${!notification.read ? `<button class="action-btn" onclick="markAsRead(${notification.id})">Mark as Read</button>` : ''}
+                        <button class="action-btn delete" onclick="deleteNotification(${notification.id})">Delete</button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function filterNotifications(filter) {
+            currentFilter = filter;
+
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            renderNotifications();
+        }
+
+        function markAsRead(id) {
+            const notification = notifications.find(n => n.id === id);
+            if (notification) {
+                notification.read = true;
+                renderNotifications();
+            }
+        }
+
+        function deleteNotification(id) {
+            notifications = notifications.filter(n => n.id !== id);
+            renderNotifications();
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

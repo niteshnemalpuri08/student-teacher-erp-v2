@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Attendance Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: 600;
+        }
+
+        .user-details h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.8em;
+        }
+
+        .user-details p {
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .subject-attendance {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .subject-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .subject-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .subject-stats {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat h5 {
+            margin: 0 0 5px 0;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .stat p {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 0.8em;
+        }
+
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .activity-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            font-size: 1.5em;
+            width: 30px;
+            text-align: center;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title-small {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .activity-time {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .actions-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .action-btn .action-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .subject-attendance {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .subject-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .subject-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .subject-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .subject-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 600;
+            display: block;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.8em;
+        }
+
+        .student-list {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .student-list h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .student-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .student-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .student-roll {
+            opacity: 0.8;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .student-attendance {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .attendance-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .attendance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 4px;
+        }
+
+        .attendance-fill.low {
+            background: linear-gradient(90deg, #F44336, #FF5722);
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .student-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.3s ease;
+        }
+
+        .student-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">T</div>
+                <div class="user-details">
+                    <h2 id="userName">Welcome back!</h2>
+                    <p id="userRole">Teacher Dashboard</p>
+                </div>
+            </div>
+            <p>Monitor student attendance and academic progress</p>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card">
+                <span class="stat-value" id="totalStudents">40</span>
+                <span class="stat-label">Students per Teacher</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="avgAttendance">85%</span>
+                <span class="stat-label">Average Attendance</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="lowAttendanceCount">12</span>
+                <span class="stat-label">Low Attendance (<75%)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="atRiskCount">8</span>
+                <span class="stat-label">At-Risk Students</span>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <div class="actions-title">Quick Actions</div>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="markAttendance()">
+                    <div class="action-icon">📝</div>
+                    Mark Attendance
+                </button>
+                <button class="action-btn" onclick="addAssignment()">
+                    <div class="action-icon">📚</div>
+                    Add Assignment
+                </button>
+                <button class="action-btn" onclick="recordMarks()">
+                    <div class="action-icon">✏️</div>
+                    Record Marks
+                </button>
+                <button class="action-btn" onclick="generateReport()">
+                    <div class="action-icon">📊</div>
+                    Generate Report
+                </button>
+                <button class="action-btn" onclick="sendNotification()">
+                    <div class="action-icon">📢</div>
+                    Send Notification
+                </button>
+                <button class="action-btn" onclick="viewAnalytics()">
+                    <div class="action-icon">📈</div>
+                    View Analytics
+                </button>
+            </div>
+        </div>
+
+        <div class="subject-attendance">
+            <div class="subject-title">Subject-wise Attendance Overview</div>
+            <div class="subject-grid" id="subjectGrid">
+                <!-- Subject cards will be populated here -->
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card" onclick="navigateTo('section.html')">
+                <div class="card-icon">👥</div>
+                <div class="card-title">My Sections</div>
+                <div class="card-description">Mark attendance for your students</div>
+            </div>
+            <div class="dashboard-card" onclick="navigateTo('report.html')">
+                <div class="card-icon">📋</div>
+                <div class="card-title">Reports</div>
+                <div class="card-description">Generate attendance reports</div>
+            </div>
+            <div class="dashboard-card" onclick="navigateTo('analytics.html')">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Advanced Analytics</div>
+                <div class="card-description">Heatmaps, trends, and insights</div>
+            </div>
+            <div class="dashboard-card" onclick="navigateTo('alerts.html')">
+                <div class="card-icon">🚨</div>
+                <div class="card-title">Alerts</div>
+                <div class="card-description">View student alerts and notifications</div>
+            </div>
+        </div>
+
+        <div class="recent-activity">
+            <div class="activity-title">Recent Activity</div>
+            <div class="activity-item">
+                <div class="activity-icon">📝</div>
+                <div class="activity-content">
+                    <div class="activity-title-small">Monthly Attendance Report Generated</div>
+                    <div class="activity-time">2 hours ago</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">⚠️</div>
+                <div class="activity-content">
+                    <div class="activity-title-small">5 Students with Low Attendance Alerted</div>
+                    <div class="activity-time">1 day ago</div>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">📊</div>
+                <div class="activity-content">
+                    <div class="activity-title-small">Performance Predictions Updated</div>
+                    <div class="activity-time">2 days ago</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="student-list">
+            <h3>My Students</h3>
+            <div class="student-grid" id="studentGrid">
+                <!-- Student cards will be populated here -->
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadStudentData();
+        });
+
+        function loadUserData() {
+            // Get user data from localStorage (set during login)
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (userData.name) {
+                document.getElementById('userName').textContent = `Welcome back, ${userData.name}!`;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0).toUpperCase();
+            }
+
+            if (userData.role) {
+                document.getElementById('userRole').textContent = userData.role.charAt(0).toUpperCase() + userData.role.slice(1) + ' Dashboard';
+            }
+        }
+
+        async function loadStudentData() {
+            try {
+                // Get user data
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                const username = userData.username;
+
+                if (!username) {
+                    alert('Please login first');
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                // Fetch teacher dashboard data
+                const dashboardResponse = await fetch(`/api/teacher/${username}/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (dashboardResponse.status === 401) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = '../login.html';
+                    return;
+                }
+
+                const dashboardData = await dashboardResponse.json();
+
+                // Update stats from dashboard API
+                document.getElementById('totalStudents').textContent = dashboardData.stats.total_students;
+                document.getElementById('avgAttendance').textContent = dashboardData.stats.avg_attendance + '%';
+                document.getElementById('lowAttendanceCount').textContent = dashboardData.stats.low_attendance_count;
+                document.getElementById('atRiskCount').textContent = dashboardData.stats.at_risk_count;
+
+                // Fetch accessible students for display
+                const studentsResponse = await fetch(`/api/teachers/${username}/accessible-students`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const students = await studentsResponse.json();
+
+                // Display first 12 students
+                const studentGrid = document.getElementById('studentGrid');
+                studentGrid.innerHTML = ''; // Clear existing content
+                const displayStudents = students.slice(0, 12);
+
+                displayStudents.forEach(student => {
+                    const attendanceClass = student.attendance < 75 ? 'low' : '';
+                    const classesAttended = Math.round(student.attendance); // Assuming attendance % is classes attended out of 100
+                    const studentCard = document.createElement('div');
+                    studentCard.className = 'student-card';
+                    studentCard.innerHTML = `
+                        <div class="student-name">${student.name}</div>
+                        <div class="student-roll">${student.roll}</div>
+                        <div class="student-attendance">
+                            <span>${classesAttended}/100</span>
+                            <div class="attendance-bar">
+                                <div class="attendance-fill ${attendanceClass}" style="width: ${student.attendance}%"></div>
+                            </div>
+                            <span>Classes</span>
+                        </div>
+                        <div class="student-actions">
+                            <button class="student-action-btn" onclick="viewStudentDetails('${student.roll}')">View</button>
+                            <button class="student-action-btn" onclick="contactParent('${student.roll}')">Contact</button>
+                        </div>
+                    `;
+                    studentGrid.appendChild(studentCard);
+                });
+
+                // Load subject attendance data
+                loadSubjectAttendance(dashboardData);
+
+                // Update recent activity with real data
+                updateRecentActivity(dashboardData);
+
+            } catch (error) {
+                console.error('Error loading student data:', error);
+                // Show error message to user
+                document.getElementById('studentGrid').innerHTML = '<p>Unable to load student data. Please check your connection and try again.</p>';
+            }
+        }
+
+        function updateRecentActivity(dashboardData) {
+            const activityContainer = document.querySelector('.activity-item:nth-child(1) .activity-content');
+            if (dashboardData.recent_assignments && dashboardData.recent_assignments.length > 0) {
+                const latestAssignment = dashboardData.recent_assignments[0];
+                activityContainer.innerHTML = `
+                    <div class="activity-title-small">Latest Assignment: ${latestAssignment.title}</div>
+                    <div class="activity-time">Due: ${latestAssignment.due_date}</div>
+                `;
+            }
+
+            const behaviorActivity = document.querySelector('.activity-item:nth-child(2) .activity-content');
+            if (dashboardData.recent_behavior && dashboardData.recent_behavior.length > 0) {
+                const latestBehavior = dashboardData.recent_behavior[0];
+                behaviorActivity.innerHTML = `
+                    <div class="activity-title-small">${latestBehavior.behavior_type} behavior recorded</div>
+                    <div class="activity-time">${latestBehavior.date_recorded}</div>
+                `;
+            }
+
+            const marksActivity = document.querySelector('.activity-item:nth-child(3) .activity-content');
+            if (dashboardData.recent_marks && dashboardData.recent_marks.length > 0) {
+                const latestMark = dashboardData.recent_marks[0];
+                marksActivity.innerHTML = `
+                    <div class="activity-title-small">Marks recorded for ${latestMark.subject}</div>
+                    <div class="activity-time">${latestMark.date_assessed}</div>
+                `;
+            }
+        }
+
+
+
+        function loadSubjectAttendance(dashboardData) {
+            const subjectGrid = document.getElementById('subjectGrid');
+            subjectGrid.innerHTML = ''; // Clear existing content
+
+            // Sample subjects - in real implementation, this would come from API
+            const subjects = [
+                { name: 'Mathematics', attendance: 88, total_students: 35, low_attendance: 4 },
+                { name: 'English', attendance: 92, total_students: 35, low_attendance: 2 },
+                { name: 'Science', attendance: 85, total_students: 35, low_attendance: 5 },
+                { name: 'History', attendance: 90, total_students: 35, low_attendance: 3 }
+            ];
+
+            subjects.forEach(subject => {
+                const subjectCard = document.createElement('div');
+                subjectCard.className = 'subject-card';
+                subjectCard.innerHTML = `
+                    <div class="subject-name">${subject.name}</div>
+                    <div class="subject-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">${subject.attendance}%</span>
+                            <span class="stat-label">Avg Attendance</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${subject.low_attendance}</span>
+                            <span class="stat-label">Low Attendance</span>
+                        </div>
+                    </div>
+                `;
+                subjectGrid.appendChild(subjectCard);
+            });
+        }
+
+        // Quick action functions
+        function markAttendance() {
+            navigateTo('section.html');
+        }
+
+        function addAssignment() {
+            // Navigate to assignment creation page or open modal
+            alert('Add Assignment functionality - Navigate to assignment page');
+        }
+
+        function recordMarks() {
+            // Navigate to marks recording page
+            alert('Record Marks functionality - Navigate to marks page');
+        }
+
+        function generateReport() {
+            navigateTo('report.html');
+        }
+
+        function sendNotification() {
+            // Open notification modal or navigate to notifications page
+            alert('Send Notification functionality - Open notification modal');
+        }
+
+        function viewAnalytics() {
+            navigateTo('analytics.html');
+        }
+
+        // Student action functions
+        function viewStudentDetails(rollNumber) {
+            // Navigate to student details page
+            alert(`View details for student: ${rollNumber}`);
+        }
+
+        function contactParent(rollNumber) {
+            // Open contact parent modal or navigate to contact page
+            alert(`Contact parent for student: ${rollNumber}`);
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '../login.html';
+        }
+    </script>
+</body>
+</html>

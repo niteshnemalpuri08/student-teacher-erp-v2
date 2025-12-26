@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Analytics - Teacher Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@0.2.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0"></script>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: 600;
+        }
+
+        .user-details h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.8em;
+        }
+
+        .user-details p {
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .filters-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .heatmap-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .comparative-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .comparative-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .comparison-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .comparison-value {
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .comparison-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .insights-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .insights-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .insight-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .insight-icon {
+            font-size: 2em;
+            width: 50px;
+            text-align: center;
+        }
+
+        .insight-content h4 {
+            margin: 0 0 5px 0;
+            font-size: 1.1em;
+        }
+
+        .insight-content p {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .trend-up { color: #4caf50; }
+        .trend-down { color: #f44336; }
+        .trend-neutral { color: #ff9800; }
+        .insight-positive { color: #4caf50; }
+        .insight-warning { color: #ff9800; }
+        .insight-danger { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">T</div>
+                <div class="user-details">
+                    <h2 id="userName">Advanced Analytics Dashboard</h2>
+                    <p id="userRole">Teacher Analytics Portal</p>
+                </div>
+            </div>
+            <p>Comprehensive insights and comparative analysis for educational excellence</p>
+        </div>
+
+        <div class="filters-section">
+            <div class="filter-group">
+                <label for="departmentFilter">Department</label>
+                <select id="departmentFilter" class="filter-select">
+                    <option value="all">All Departments</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sectionFilter">Section</label>
+                <select id="sectionFilter" class="filter-select">
+                    <option value="all">All Sections</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="timeRangeFilter">Time Range</label>
+                <select id="timeRangeFilter" class="filter-select">
+                    <option value="month">Last Month</option>
+                    <option value="quarter">Last Quarter</option>
+                    <option value="semester">Last Semester</option>
+                    <option value="year">Last Year</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="metricFilter">Primary Metric</label>
+                <select id="metricFilter" class="filter-select">
+                    <option value="attendance">Attendance</option>
+                    <option value="performance">Academic Performance</option>
+                    <option value="both">Both Metrics</option>
+                </select>
+            </div>
+            <button onclick="applyFilters()" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Apply Filters</button>
+        </div>
+
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <div class="card-title">📊 Performance Heatmap</div>
+                <div class="heatmap-container">
+                    <canvas id="performanceHeatmap"></canvas>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="heatmapAvg">85%</span>
+                        <span class="stat-label">Average Performance</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="heatmapHigh">95%</span>
+                        <span class="stat-label">Highest Score</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="heatmapLow">65%</span>
+                        <span class="stat-label">Lowest Score</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="heatmapVariance">12%</span>
+                        <span class="stat-label">Variance</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-card">
+                <div class="card-title">📈 Trend Analysis</div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value trend-up" id="trendDirection">↗️ +8%</span>
+                        <span class="stat-label">Overall Trend</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="trendConsistency">78%</span>
+                        <span class="stat-label">Consistency</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="trendVolatility">15%</span>
+                        <span class="stat-label">Volatility</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="trendPrediction">87%</span>
+                        <span class="stat-label">Next Period</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparative-section">
+            <div class="comparative-title">🔍 Comparative Insights</div>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <div class="comparison-value" id="deptComparison">+12%</div>
+                    <div class="comparison-label">vs Department Average</div>
+                </div>
+                <div class="comparison-card">
+                    <div class="comparison-value" id="sectionComparison">+5%</div>
+                    <div class="comparison-label">vs Section Average</div>
+                </div>
+                <div class="comparison-card">
+                    <div class="comparison-value" id="peerComparison">-3%</div>
+                    <div class="comparison-label">vs Peer Teachers</div>
+                </div>
+                <div class="comparison-card">
+                    <div class="comparison-value" id="historicalComparison">+18%</div>
+                    <div class="comparison-label">vs Last Semester</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">💡 AI-Powered Insights & Recommendations</div>
+            <div class="insights-grid" id="insightsContainer">
+                <!-- Insights will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilters = {
+            department: 'all',
+            section: 'all',
+            timeRange: 'month',
+            metric: 'attendance'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadFilters();
+            loadAnalyticsData();
+        });
+
+        async function loadUserData() {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (userData.name) {
+                document.getElementById('userName').textContent = `${userData.name} - Analytics Dashboard`;
+                document.getElementById('userAvatar').textContent = userData.name.charAt(0).toUpperCase();
+            }
+        }
+
+        async function loadFilters() {
+            try {
+                // Load departments
+                const deptResponse = await fetch('/api/departments');
+                const departments = await deptResponse.json();
+
+                const deptFilter = document.getElementById('departmentFilter');
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.id;
+                    option.textContent = dept.name;
+                    deptFilter.appendChild(option);
+                });
+
+                // Load sections
+                const sectionResponse = await fetch('/api/sections');
+                const sections = await sectionResponse.json();
+
+                const sectionFilter = document.getElementById('sectionFilter');
+                sections.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = section.id;
+                    option.textContent = `${section.name} (${section.class_name})`;
+                    sectionFilter.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+
+        async function loadAnalyticsData() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                const token = localStorage.getItem('token');
+
+                // Load attendance heatmap data
+                const heatmapResponse = await fetch(`/api/analytics/attendance-heatmap?teacher=${userData.username}&timeframe=${currentFilters.timeRange}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const heatmapData = await heatmapResponse.json();
+
+                // Load performance trends data
+                const trendsResponse = await fetch(`/api/analytics/performance-trends?teacher=${userData.username}&timeframe=${currentFilters.timeRange}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const trendsData = await trendsResponse.json();
+
+                // Load insights data
+                const insightsResponse = await fetch(`/api/analytics/insights?teacher=${userData.username}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const insightsData = await insightsResponse.json();
+
+                // Render all analytics components
+                renderAttendanceHeatmap(heatmapData);
+                renderTrendChart(trendsData);
+                renderComparativeInsights(trendsData);
+                renderAIInsights(insightsData.insights || []);
+
+            } catch (error) {
+                console.error('Error loading analytics data:', error);
+            }
+        }
+
+        function renderAttendanceHeatmap(data) {
+            const ctx = document.getElementById('performanceHeatmap').getContext('2d');
+
+            // Prepare heatmap data for Chart.js matrix
+            const heatmapData = [];
+            const studentLabels = data.data.map(s => s.student.split(' ')[0]); // First name only
+            const timeLabels = data.labels;
+
+            data.data.forEach((student, studentIndex) => {
+                student.data.forEach((value, timeIndex) => {
+                    heatmapData.push({
+                        x: timeIndex,
+                        y: studentIndex,
+                        v: value
+                    });
+                });
+            });
+
+            new Chart(ctx, {
+                type: 'matrix',
+                data: {
+                    datasets: [{
+                        label: 'Attendance Heatmap',
+                        data: heatmapData,
+                        backgroundColor: function(context) {
+                            const value = context.parsed.v;
+                            if (value >= 90) return '#4CAF50';
+                            if (value >= 80) return '#8BC34A';
+                            if (value >= 70) return '#FFC107';
+                            if (value >= 60) return '#FF9800';
+                            return '#F44336';
+                        },
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        width: 30,
+                        height: 30
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const dataIndex = context[0].dataIndex;
+                                    const studentIndex = Math.floor(dataIndex / timeLabels.length);
+                                    const timeIndex = dataIndex % timeLabels.length;
+                                    return `${data.data[studentIndex].student} - ${timeLabels[timeIndex]}`;
+                                },
+                                label: function(context) {
+                                    return `Attendance: ${context.parsed.v.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'category',
+                            labels: timeLabels,
+                            ticks: {
+                                color: 'white',
+                                font: { size: 10 },
+                                maxRotation: 45
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
+                            }
+                        },
+                        y: {
+                            type: 'category',
+                            labels: studentLabels,
+                            ticks: {
+                                color: 'white',
+                                font: { size: 10 }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Calculate real stats from heatmap data
+            let allValues = [];
+            data.data.forEach(student => {
+                allValues = allValues.concat(student.data);
+            });
+
+            const maxAttendance = Math.max(...allValues);
+            const minAttendance = Math.min(...allValues);
+            const mean = allValues.reduce((a, b) => a + b, 0) / allValues.length;
+            const variance = allValues.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / allValues.length;
+
+            // Update stats
+            document.getElementById('heatmapAvg').textContent = data.stats.avg_attendance.toFixed(1) + '%';
+            document.getElementById('heatmapHigh').textContent = maxAttendance.toFixed(1) + '%';
+            document.getElementById('heatmapLow').textContent = minAttendance.toFixed(1) + '%';
+            document.getElementById('heatmapVariance').textContent = Math.sqrt(variance).toFixed(1) + '%';
+        }
+
+        function renderTrendChart(data) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+
+            // Use real trend data from API
+            const labels = data.labels;
+            const attendanceData = data.attendance;
+            const performanceData = data.performance;
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: attendanceData,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#4CAF50',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }, {
+                        label: 'Performance %',
+                        data: performanceData,
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#2196F3',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: 'white',
+                                font: { size: 14 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 40,
+                            max: 100,
+                            ticks: {
+                                color: 'white',
+                                font: { size: 12 }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white',
+                                font: { size: 12 }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Use trend statistics from API
+            const stats = data.stats;
+
+            document.getElementById('trendDirection').textContent = `${stats.trend_direction} ${stats.trend_value > 0 ? '+' : ''}${stats.trend_value.toFixed(1)}%`;
+            document.getElementById('trendDirection').className = `stat-value ${stats.trend_class}`;
+
+            document.getElementById('trendConsistency').textContent = Math.round(stats.consistency) + '%';
+            document.getElementById('trendVolatility').textContent = Math.round(stats.volatility) + '%';
+            document.getElementById('trendPrediction').textContent = Math.round(stats.prediction) + '%';
+        }
+
+        function renderComparativeInsights(data) {
+            // Use real comparative data from API
+            const comparisons = data.comparisons;
+
+            document.getElementById('deptComparison').textContent = `${comparisons.department > 0 ? '+' : ''}${comparisons.department.toFixed(1)}%`;
+            document.getElementById('deptComparison').style.color = comparisons.department > 0 ? '#4CAF50' : '#F44336';
+
+            document.getElementById('sectionComparison').textContent = `${comparisons.section > 0 ? '+' : ''}${comparisons.section.toFixed(1)}%`;
+            document.getElementById('sectionComparison').style.color = comparisons.section > 0 ? '#4CAF50' : '#F44336';
+
+            document.getElementById('peerComparison').textContent = `${comparisons.peer > 0 ? '+' : ''}${comparisons.peer.toFixed(1)}%`;
+            document.getElementById('peerComparison').style.color = comparisons.peer > 0 ? '#4CAF50' : '#F44336';
+
+            document.getElementById('historicalComparison').textContent = `+${comparisons.historical.toFixed(1)}%`;
+            document.getElementById('historicalComparison').style.color = '#4CAF50';
+        }
+
+        function renderAIInsights(insights) {
+            const container = document.getElementById('insightsContainer');
+
+            container.innerHTML = '';
+
+            if (!insights || insights.length === 0) {
+                container.innerHTML = '<p style="text-align: center; opacity: 0.7;">No insights available at this time.</p>';
+                return;
+            }
+
+            insights.forEach(insight => {
+                const card = document.createElement('div');
+                card.className = 'insight-card';
+                card.innerHTML = `
+                    <div class="insight-icon ${insight.type || 'insight-info'}">${insight.icon || '💡'}</div>
+                    <div class="insight-content">
+                        <h4>${insight.title || 'Insight'}</h4>
+                        <p>${insight.description || 'No description available.'}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+
+
+        function applyFilters() {
+            currentFilters = {
+                department: document.getElementById('departmentFilter').value,
+                section: document.getElementById('sectionFilter').value,
+                timeRange: document.getElementById('timeRangeFilter').value,
+                metric: document.getElementById('metricFilter').value
+            };
+
+            // Reload data with new filters
+            loadAnalyticsData();
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '../login.html';
+        }
+    </script>
+</body>
+</html>

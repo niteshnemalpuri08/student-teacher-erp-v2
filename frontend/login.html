@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Attendance Analysis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80') no-repeat center center/cover;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      width: 350px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .input-group {
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #f0f0f0;
+      font-size: 14px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+
+    .switch-login {
+      margin-top: 20px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .switch-login a {
+      color: #ffd369;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .switch-login a:hover,
+    .switch-login a.active {
+      text-decoration: underline;
+      color: #fff;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <img src="/gietlogo.jpg" alt="GIET Logo" style="width: 80px; height: auto; margin-bottom: 20px;">
+    <h2>Attendance Portal</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="userId">User ID</label>
+        <input type="text" id="userId" placeholder="Enter your ID" required>
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <div class="switch-login">
+      Login as: <a href="#" onclick="setRole('student')" id="studentLink">Student</a> |
+      <a href="#" onclick="setRole('teacher')" id="teacherLink">Teacher</a> |
+      <a href="#" onclick="setRole('parent')" id="parentLink">Parent</a>
+    </div>
+  </div>
+
+  <script>
+    let role = "student"; // default role
+
+    function setRole(selectedRole) {
+      role = selectedRole;
+      alert("Switched to " + role.toUpperCase() + " login");
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const username = document.getElementById("userId").value;
+      const password = document.getElementById("password").value;
+
+      // Make API call to backend authentication
+      fetch('/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    username: username,
+    password: password,
+    role: role
+  })
+})
+
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          // Store user info + token in localStorage for session management
+          localStorage.setItem('user', JSON.stringify({
+            username: data.username,
+            role: data.role,
+            name: data.name,
+            token: data.token
+          }));
+
+          // Redirect based on role
+          if (data.role === 'student') {
+            window.location.href = 'student_dash/index.html';
+          } else if (data.role === 'teacher') {
+            window.location.href = 'teacher_dash/teacher.html';
+          } else if (data.role === 'parent') {
+            window.location.href = 'parent_dash/index.html';
+          }
+        } else {
+          alert('Login failed: ' + (data.message || 'Invalid credentials'));
+        }
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.');
+      });
+    });
+
+
+  </script>
+</body>
+</html>

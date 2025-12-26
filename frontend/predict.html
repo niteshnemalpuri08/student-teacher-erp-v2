@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>ML Predict - My Performance</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+    }
+    .student-info {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .predict-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+      transition: transform 0.2s ease;
+    }
+    .predict-btn:hover {
+      transform: translateY(-2px);
+    }
+    .result {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      font-family: monospace;
+    }
+    .back-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+
+  <div class="container">
+    <h2>🎯 My Performance Prediction</h2>
+    <div id="content"></div>
+  </div>
+
+  <script>
+    async function loadMyPrediction(){
+      // Get current user from localStorage
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const container = document.getElementById('content');
+
+      if (!userData.username) {
+        container.innerHTML = '<p style="color: #ff6b6b;">Please login first to view your prediction.</p>';
+        return;
+      }
+
+      try {
+        // Fetch current user's data
+        const res = await fetch('/api/students/username/' + userData.username);
+        if (!res.ok) {
+          container.innerHTML = '<p style="color: #ff6b6b;">Unable to load your data. Please try again.</p>';
+          return;
+        }
+        const student = await res.json();
+
+        container.innerHTML = `
+          <div class="student-info">
+            <h3>${student.roll} - ${student.name}</h3>
+            <p><strong>Class:</strong> ${student.class}</p>
+            <p><strong>Average Marks:</strong> ${student.avg_marks}%</p>
+            <p><strong>Attendance:</strong> ${student.attendance}%</p>
+            <p><strong>Subject-wise Marks:</strong></p>
+            <ul>
+              <li>Mathematics: ${student.marks.math}%</li>
+              <li>Physics: ${student.marks.physics}%</li>
+              <li>Chemistry: ${student.marks.chemistry}%</li>
+              <li>Computer Science: ${student.marks.cs}%</li>
+              <li>English: ${student.marks.english}%</li>
+            </ul>
+          </div>
+
+          <button class="predict-btn" onclick="doPredict('${student.roll}')">
+            🔮 Predict My Performance
+          </button>
+
+          <div id="result" class="result" style="display: none;"></div>
+        `;
+      } catch (error) {
+        console.error('Error loading data:', error);
+        container.innerHTML = '<p style="color: #ff6b6b;">Error loading your data. Please try again.</p>';
+      }
+    }
+
+    async function doPredict(roll){
+      try {
+        const res1 = await fetch('/api/students/username/'+roll.toLowerCase());
+        const s = await res1.json();
+        const payload = {
+          math: s.marks.math,
+          physics: s.marks.physics,
+          chemistry: s.marks.chemistry,
+          cs: s.marks.cs,
+          english: s.marks.english,
+          attendance: s.attendance,
+          avg_marks: s.avg_marks
+        };
+
+        const res = await fetch('/ml/predict', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          throw new Error('Prediction failed');
+        }
+
+        const out = await res.json();
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+
+        // Interpret the results for students
+        const prediction = out.prediction;
+        const probability = out.probability;
+
+        let resultText = '';
+        let confidenceText = '';
+        let recommendationText = '';
+
+        if (prediction === 1) {
+          resultText = '✅ <strong>Likely to PASS</strong>';
+          confidenceText = `Confidence: ${(probability * 100).toFixed(1)}%`;
+          recommendationText = '🎉 Great job! Keep up the good work!';
+        } else {
+          resultText = '⚠️ <strong>Likely to FAIL</strong>';
+          confidenceText = `Confidence: ${((1 - probability) * 100).toFixed(1)}%`;
+          recommendationText = '📚 Consider focusing on weaker subjects and improving attendance.';
+        }
+
+        resultDiv.innerHTML = `
+          <h4>🎯 Your Performance Prediction</h4>
+          <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0;">
+            <div style="font-size: 1.2em; margin-bottom: 10px;">${resultText}</div>
+            <div style="margin-bottom: 10px;">${confidenceText}</div>
+            <div style="font-style: italic; opacity: 0.9;">${recommendationText}</div>
+          </div>
+          <div style="font-size: 0.9em; opacity: 0.7; margin-top: 15px;">
+            <strong>What this means:</strong><br>
+            • This prediction is based on your current marks and attendance<br>
+            • Higher marks and better attendance improve your chances of passing<br>
+            • This is just a prediction - you can always improve your performance!
+          </div>
+        `;
+      } catch (error) {
+        console.error('Prediction error:', error);
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<p style="color: #ff6b6b;">❌ Prediction failed. Please try again.</p>';
+      }
+    }
+
+    function goBack() {
+      window.location.href = 'student_dash/index.html';
+    }
+
+    // Load data when page loads
+    loadMyPrediction();
+  </script>
+</body>
+</html>
