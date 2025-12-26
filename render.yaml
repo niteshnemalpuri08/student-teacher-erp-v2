@@ -3,7 +3,7 @@ services:
     name: student-teacher-erp
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn backend.server:app
+    startCommand: python backend/server.py
     envVars:
       - key: FLASK_ENV
         value: production
@@ -13,6 +13,8 @@ services:
         fromDatabase:
           name: erp-db
           property: connectionString
-  - type: pserv
-    name: erp-db
-    env: postgres
+
+databases:
+  - name: erp-db
+    databaseName: erp_db
+    user: erp_user

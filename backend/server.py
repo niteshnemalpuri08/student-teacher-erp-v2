@@ -2,11 +2,11 @@ import os
 import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from .models import db, Student, Teacher, Parent, InternalMark, Assignment, AssignmentSubmission, StudentBehavior, TeacherDepartment, TeacherSection, TeacherSubject, SubjectAttendance, WebhookEvent
+from models import db, Student, Teacher, Parent, InternalMark, Assignment, AssignmentSubmission, StudentBehavior, TeacherDepartment, TeacherSection, TeacherSubject, SubjectAttendance, WebhookEvent
 import jwt
 import bcrypt
 from functools import wraps
-from .ml_app import bp as ml_bp
+from ml_app import bp as ml_bp
 
 app = Flask(__name__)
 CORS(app)
