@@ -73,10 +73,16 @@ def process_face(img_gray):
 
 def train_ai():
     global AI_READY, face_recognizer
-    
-    if not hasattr(cv2, 'face'):
-        print("❌ AI ERROR: 'cv2.face' missing. Ensure 'opencv-contrib-python' is installed.")
-        return
+    try:
+        # Check if the folder exists first
+        face_dir = os.path.join(os.getcwd(), "faces", "24cse001")
+        
+        # We added this 'if' so the app DOES NOT CRASH if the folder is missing
+        if not os.path.exists(face_dir):
+            print("⚠️ Skipping AI training: No photos found in 'faces/24cse001' yet.")
+            return
+    except Exception as e:
+        print(f"⚠️ AI training skipped: {e}")
     
     face_recognizer = cv2.face.LBPHFaceRecognizer_create()
     face_samples = []
