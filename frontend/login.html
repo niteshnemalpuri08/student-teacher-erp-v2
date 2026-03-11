@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#764ba2">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GIET University</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Poppins', sans-serif; margin: 0; }
+        .login-card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%; max-width: 380px; text-align: center; transition: all 0.3s ease; }
+        
+        .logo { width: 130px; margin-bottom: 15px; }
+        h2 { margin-top: 0; color: #333; font-size: 1.4em; margin-bottom: 20px; }
+
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 14px; outline: none; }
+        input:focus { border-color: #667eea; }
+        
+        .role-label { text-align: left; font-size: 0.85em; margin: 15px 0 8px 5px; color: #555; font-weight: 600; }
+        .role-container { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px; }
+        .role-btn { flex: 1; padding: 12px 5px; background: #f8f9fa; color: #666; border: 2px solid #eee; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .role-btn.selected { background: #e8f0fe; border-color: #667eea; color: #667eea; transform: scale(1.05); }
+
+        #loginBtn, #faceLoginBtn { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        
+        #loginBtn { background: #667eea; color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+        #loginBtn:hover { background: #764ba2; transform: translateY(-2px); }
+        
+        #faceLoginBtn { background: #f0f2f5; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        #faceLoginBtn:hover { background: #e4e6e9; }
+
+        .error { color: #e74c3c; margin-top: 15px; display: none; font-size: 0.85em; font-weight: bold; padding: 10px; background: #fdf2f2; border-radius: 8px; }
+        .footer-note { margin-top: 25px; font-size: 0.8em; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        .divider { margin: 20px 0; display: flex; align-items: center; color: #aaa; font-size: 12px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #eee; margin: 0 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="gietlogo.jpg" alt="GIET University Logo" class="logo">
+        
+        <h2>Portal Login</h2>
+        
+        <div id="passwordSection">
+            <input type="text" id="username" placeholder="Enter Username">
+            <input type="password" id="password" placeholder="Enter Password">
+
+            <div class="role-label">Select Profile:</div>
+            <div class="role-container">
+                <button class="role-btn" onclick="selectRole('student', this)">STUDENT</button>
+                <button class="role-btn" onclick="selectRole('teacher', this)">TEACHER</button>
+                <button class="role-btn" onclick="selectRole('parent', this)">PARENT</button>
+            </div>
+
+            <button id="loginBtn" onclick="handleLogin()">Sign In</button>
+
+            <div class="divider">OR</div>
+
+            <button id="faceLoginBtn" onclick="window.location.href='face_login.html'">
+                <span>👤</span> Login with Face ID
+            </button>
+        </div>
+        
+        <p class="error" id="errorMsg"></p>
+        
+        <div class="footer-note">
+            © 2026 GIET University ERP System
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = "";
+
+        function selectRole(role, btn) {
+            selectedRole = role;
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+
+        localStorage.clear();
+
+        async function handleLogin() {
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('errorMsg');
+
+            if (!userIn || !passIn || !selectedRole) {
+                err.innerText = !selectedRole ? "⚠️ Please select a profile role" : "⚠️ Username and password required";
+                err.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Authenticating...";
+            err.style.display = 'none';
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: userIn, password: passIn })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    if (data.role !== selectedRole) {
+                        throw new Error(`Unauthorized: Account not registered as ${selectedRole.toUpperCase()}`);
+                    }
+
+                    localStorage.setItem('user', JSON.stringify(data));
+                    btn.innerText = "Verified! Redirecting...";
+                    btn.style.background = "#2ecc71";
+
+                    setTimeout(() => {
+                        let targetPage = "";
+                        if (data.role === 'student') targetPage = 'student_dash/index.html';
+                        else if (data.role === 'teacher') targetPage = 'teacher_dash/index.html';
+                        else if (data.role === 'parent') targetPage = 'parent_dash/index.html';
+                        window.location.replace(targetPage);
+                    }, 800);
+
+                } else {
+                    throw new Error(data.message || "Invalid Username or Password");
+                }
+            } catch (error) {
+                err.innerText = "❌ " + error.message;
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Sign In";
+                btn.style.background = "#667eea";
+            }
+        }
+    </script>
+</body>
+</html>
