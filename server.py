@@ -27,11 +27,13 @@ except ImportError:
 from predictor import predict_score 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+# Change ONLY this part at the top of your server.py
+app = Flask(__name__, static_folder='frontend', static_url_path='')
 
-# We are pointing directly to the folder that holds your login.html
-app = Flask(__name__, 
-            static_folder='AI-Powered Student Attendance', 
-            static_url_path='')
+# And make sure the home route looks like this at the bottom
+@app.route('/')
+def serve_index(): 
+    return send_from_directory(app.static_folder, 'login.html')
 
 # 🔥 RECTIFIED CORS: Critical for mobile-laptop cross-communication
 CORS(app, resources={r"/*": {"origins": "*"}}) 
