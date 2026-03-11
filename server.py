@@ -409,7 +409,8 @@ def serve_index(): return send_from_directory(app.static_folder, 'login.html')
 
 @app.route('/<path:path>')
 def serve_static(path): return send_from_directory(app.static_folder, path)
+# CORRECT VERSION
 if __name__ == '__main__':
-    with app.app_context():
+    with app.app_context():  # <--- Make sure it has ()
         db.create_all()
     app.run(host='0.0.0.0', port=5000)
