@@ -31,10 +31,9 @@ from reportlab.pdfgen import canvas
 app = Flask(__name__, static_folder='frontend', static_url_path='')
 
 # And make sure the home route looks like this at the bottom
-@app.route('/')
-def serve_index(): 
-    return send_from_directory(app.static_folder, 'login.html')
-
+app = Flask(__name__, 
+            static_folder='AI-Powered Student Attendance/final_complete_project', 
+            static_url_path='')
 # 🔥 RECTIFIED CORS: Critical for mobile-laptop cross-communication
 CORS(app, resources={r"/*": {"origins": "*"}}) 
 
@@ -416,7 +415,8 @@ def repair_data():
     return "✅ Data Repaired"
 
 @app.route('/')
-def serve_index(): return send_from_directory('frontend', 'login.html')
+def serve_index(): 
+    return send_from_directory(app.static_folder, 'login.html')
 
 @app.route('/<path:path>')
 def serve_static(path): return send_from_directory(app.static_folder, path)
