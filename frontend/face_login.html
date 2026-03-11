@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face ID Login - GIET University</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h2 { margin-bottom: 10px; }
+        p { color: #ccc; margin-bottom: 20px; }
+
+        .camera-box {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 4px solid #16213e;
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); 
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #2ecc71;
+            box-shadow: 0 0 10px #2ecc71;
+            animation: scan 2s infinite linear;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
+        .status {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            font-weight: 600;
+            min-height: 25px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .back-link {
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>👤 Face Identity</h2>
+    <p>Look at the camera to login</p>
+
+    <div class="camera-box">
+        <video id="video" autoplay playsinline></video>
+        <div class="scan-line" id="scanner"></div>
+    </div>
+
+    <div class="status" id="statusMsg">Waiting for camera...</div>
+
+    <button id="scanBtn" onclick="startScanning()">Start Camera</button>
+    
+    <a href="login.html" class="back-link">Use Password Login</a>
+
+    <script>
+        const video = document.getElementById('video');
+        const status = document.getElementById('statusMsg');
+        const btn = document.getElementById('scanBtn');
+        const scanner = document.getElementById('scanner');
+        let stream = null;
+        let isScanning = false;
+
+        async function startScanning() {
+            btn.disabled = true;
+            status.textContent = "Accessing Camera...";
+            status.style.color = "white";
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" } 
+                });
+                video.srcObject = stream;
+                
+                // Wait for the video feed to actually start
+                video.onplay = () => {
+                    status.textContent = "Position your face...";
+                    btn.style.display = "none"; // Hide button during scan
+                    scanner.style.display = 'block';
+                    isScanning = true;
+
+                    // Start the loop to check face every 1.5 seconds
+                    setTimeout(captureAndCheck, 1500);
+                };
+
+            } catch (err) {
+                console.error(err);
+                status.textContent = "❌ Camera Error: " + err.message;
+                status.style.color = "#e74c3c";
+                btn.disabled = false;
+                btn.textContent = "Try Again";
+            }
+        }
+
+        async function captureAndCheck() {
+            if (!isScanning) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            status.textContent = "Verifying Identity...";
+            status.style.color = "white";
+
+            try {
+                const response = await fetch('/auth/face_login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageBase64 })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // ✅ LOGIN SUCCESS
+                    isScanning = false;
+                    status.textContent = `Welcome, ${data.name}!`;
+                    status.style.color = "#2ecc71"; 
+                    
+                    // Stop laser animation and make it solid green
+                    scanner.style.animation = "none";
+                    scanner.style.top = "50%";
+                    scanner.style.background = "#2ecc71";
+                    scanner.style.boxShadow = "0 0 20px #2ecc71";
+                    
+                    // Stop Camera Stream
+                    if(stream) stream.getTracks().forEach(track => track.stop());
+
+                    // Save session data
+                    localStorage.setItem('user', JSON.stringify(data));
+
+                    // Redirect to your original dashboard folders
+                    setTimeout(() => {
+                        let targetPage = "login.html";
+                        if(data.role === 'student') targetPage = 'student_dash/index.html';
+                        else if(data.role === 'teacher') targetPage = 'teacher_dash/index.html';
+                        else if(data.role === 'parent') targetPage = 'parent_dash/index.html';
+                        
+                        // Use replace to prevent "Back" button loop
+                        window.location.replace(targetPage);
+                    }, 1200);
+
+                } else {
+                    // ❌ NO MATCH (Keep trying without stopping the camera)
+                    status.textContent = data.message || "Looking for face...";
+                    status.style.color = "#ccc";
+                    
+                    // Retry after 1.5 seconds
+                    setTimeout(captureAndCheck, 1500);
+                }
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                status.textContent = "Server Connection Error";
+                status.style.color = "#e74c3c";
+                isScanning = false;
+                
+                // Allow user to try again
+                btn.style.display = "inline-block";
+                btn.disabled = false;
+                btn.textContent = "Start Camera";
+                scanner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; padding: 20px; box-sizing: border-box; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .logout-btn { background: #ff4757; border: none; padding: 10px 20px; color: white; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .student-info { background: rgba(0,0,0,0.25); padding: 20px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; }
+        .info-box { text-align: center; min-width: 100px; }
+        .info-box span { display: block; font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
+        .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .menu-card { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; text-align: center; text-decoration: none; color: white; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); }
+        .menu-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h1>👨‍👩‍👧 Parent Portal</h1><p>Welcome, <span id="parentName">...</span></p></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="student-info">
+            <div class="info-box"><span id="childName">Loading...</span><small>Child's Name</small></div>
+            <div class="info-box"><span id="childRoll">...</span><small>Roll No</small></div>
+            <div class="info-box"><span id="childAvg" style="color: #4CAF50;">--%</span><small>Avg Marks</small></div>
+        </div>
+
+        <div class="grid-menu">
+            <a href="performance.html" class="menu-card"><h3>📊 Performance</h3><p>Detailed Grades</p></a>
+            <a href="attendance.html" class="menu-card"><h3>📅 Attendance</h3><p>Daily Status</p></a>
+            <a href="communication.html" class="menu-card"><h3>💬 Messages</h3><p>Chat with Teacher</p></a>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'parent') window.location.href = '../login.html';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('parentName').textContent = user.name;
+            try {
+                const res = await fetch('/api/parent/child', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.username })
+                });
+                const data = await res.json();
+                if (!data.error) {
+                    document.getElementById('childName').textContent = data.child_name;
+                    document.getElementById('childRoll').textContent = data.roll.toUpperCase();
+                    document.getElementById('childAvg').textContent = data.avg + '%';
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        function logout() { localStorage.clear(); window.location.href = '../login.html'; }
+    </script>
+</body>
+</html>

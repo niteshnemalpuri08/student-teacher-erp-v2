@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+        .back-btn { background: rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 20px; text-decoration: none; cursor: pointer; }
+        .card { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .att-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; }
+        .att-val { font-size: 1.8em; font-weight: 700; display: block; margin: 10px 0; }
+        .chart-box { height: 300px; position: relative; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h2>📅 Attendance</h2><p style="font-size:0.9em; opacity:0.8">Detailed Logs</p></div>
+            <a href="index.html" class="back-btn">Back</a>
+        </div>
+        <div class="card">
+            <h3>Subject Breakdown</h3>
+            <div class="grid" id="attGrid">Loading...</div>
+        </div>
+        <div class="card">
+            <h3>Visual Analysis</h3>
+            <div class="chart-box"><canvas id="attChart"></canvas></div>
+        </div>
+    </div>
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(!user) window.location.href = '../login.html';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`/api/students/${user.username}`);
+                const data = await res.json();
+                const overall = data.attendance || 0; 
+                
+                const subjects = [
+                    { name: 'Mathematics', val: overall }, 
+                    { name: 'Physics', val: overall },
+                    { name: 'Chemistry', val: overall },
+                    { name: 'Comp. Sci', val: overall },
+                    { name: 'English', val: overall }
+                ];
+
+                document.getElementById('attGrid').innerHTML = subjects.map(s => `
+                    <div class="att-card">
+                        <h4>${s.name}</h4>
+                        <span class="att-val" style="color:${s.val<75?'#ff6b6b':'#4caf50'}">${s.val}%</span>
+                    </div>`).join('');
+
+                new Chart(document.getElementById('attChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: subjects.map(s => s.name),
+                        datasets: [{ 
+                            label: 'Attendance %', 
+                            data: subjects.map(s => s.val), 
+                            backgroundColor: subjects.map(s => s.val < 75 ? 'rgba(255, 99, 132, 0.8)' : 'rgba(75, 192, 192, 0.8)'),
+                            borderRadius: 5 
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } }, plugins: { legend: { display: false } } }
+                });
+            } catch(e) { console.error(e); }
+        });
+    </script>
+</body>
+</html>

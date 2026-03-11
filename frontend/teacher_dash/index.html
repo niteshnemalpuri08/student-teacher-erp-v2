@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Smart Teacher Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CORE REFINEMENTS */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            color: white; 
+            padding: 20px;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* ADVANCED GLASS-MORPHISM HEADER */
+        .header { 
+            background: rgba(255, 255, 255, 0.12); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px; 
+            padding: 25px 30px; 
+            margin-bottom: 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+
+        .header h1 { font-size: 1.5em; font-weight: 700; letter-spacing: -0.5px; }
+        .section-tag { 
+            background: rgba(255,255,255,0.2); 
+            padding: 4px 12px; 
+            border-radius: 8px; 
+            font-size: 0.85em; 
+            margin-top: 5px; 
+            display: inline-block;
+        }
+
+        .logout-btn { 
+            background: rgba(255, 71, 87, 0.2); 
+            border: 1px solid rgba(255, 71, 87, 0.3); 
+            padding: 10px 20px; 
+            color: #ff6b6b; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover { background: #ff4757; color: white; }
+
+        /* ANALYTICS GRID */
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+            margin-bottom: 25px; 
+        }
+
+        .stat-card { 
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(10px);
+            padding: 20px; 
+            border-radius: 20px; 
+            text-align: center; 
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.12); }
+
+        .stat-val { font-size: 2em; font-weight: 800; display: block; line-height: 1.2; }
+        .stat-label { font-size: 0.75em; opacity: 0.7; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* INTERACTIVE NAVIGATION CARDS */
+        .nav-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+        }
+
+        .nav-card { 
+            background: rgba(255, 255, 255, 0.06); 
+            padding: 30px 20px; 
+            border-radius: 24px; 
+            text-decoration: none; 
+            color: white; 
+            text-align: center; 
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background: var(--accent-color);
+        }
+
+        .nav-card:hover { 
+            transform: scale(1.03); 
+            background: rgba(255, 255, 255, 0.15); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .nav-icon { 
+            font-size: 2.8em; 
+            margin-bottom: 15px; 
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+        }
+
+        .nav-card strong { font-size: 1.1em; font-weight: 600; }
+
+        @media (max-width: 500px) { 
+            .stats-grid { grid-template-columns: 1fr; } 
+            .nav-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 id="welcomeMsg">Teacher</h1>
+                <div class="section-tag">📍 Section: <span id="sectionBadge">...</span></div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Sign Out</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-val" id="totalCount">--</span>
+                <span class="stat-label">Enrolled Students</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="avgAtt">--%</span>
+                <span class="stat-label">Class Avg. Attendance</span>
+            </div>
+            <div class="stat-card" style="border-bottom: 4px solid #ff6b6b;">
+                <span class="stat-val" id="riskCount" style="color:#ff6b6b">--</span>
+                <span class="stat-label">At-Risk Alerts</span>
+            </div>
+        </div>
+
+        <div class="nav-grid">
+            <a href="section.html" class="nav-card" style="--accent-color: #4CAF50;">
+                <span class="nav-icon">📝</span><strong>Take Attendance</strong>
+            </a>
+            <a href="analytics.html" class="nav-card" style="--accent-color: #2196F3;">
+                <span class="nav-icon">📊</span><strong>Visual Analytics</strong>
+            </a>
+            <a href="alerts.html" class="nav-card" style="--accent-color: #FF9800;">
+                <span class="nav-icon">📢</span><strong>Parent Alerts</strong>
+            </a>
+            <a href="chat.html" class="nav-card" style="--accent-color: #E91E63;">
+                <span class="nav-icon">💬</span><strong>Parent Chat</strong>
+            </a>
+        </div>
+    </div>
+
+    
+
+    <script>
+        // Logic remains strictly identical to the original provided code
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(!user || user.role !== 'teacher') { window.location.href = '../login.html'; }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if(!user) return;
+            document.getElementById('welcomeMsg').textContent = `Welcome, ${user.name.split(' ')[0]}`;
+
+            try {
+                const res = await fetch('/api/teacher/students', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: user.username })
+                });
+                if(res.status === 401) { logout(); return; }
+                const data = await res.json();
+                if(data.students) {
+                    document.getElementById('sectionBadge').textContent = data.section;
+                    document.getElementById('totalCount').textContent = data.students.length;
+                    const totalAtt = data.students.reduce((sum, s) => sum + s.attendance, 0);
+                    const avg = Math.round(totalAtt / data.students.length) || 0;
+                    document.getElementById('avgAtt').textContent = avg + '%';
+                    // Automated At-Risk logic as per synopsis objectives
+                    document.getElementById('riskCount').textContent = data.students.filter(s => s.attendance < 75).length;
+                }
+            } catch(e) { console.error(e); }
+        });
+
+        function logout() { localStorage.clear(); window.location.href = '../login.html'; }
+    </script>
+</body>
+</html>

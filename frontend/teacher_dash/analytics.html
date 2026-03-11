@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Section Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; padding: 20px; margin: 0; box-sizing: border-box; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .back-btn { background: rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 0.9em; }
+        .chart-box { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-bottom: 20px; height: 320px; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h2>📈 Section Analytics</h2><a href="index.html" class="back-btn">Back</a></div>
+        <div class="chart-box"><canvas id="attChart"></canvas></div>
+        <div class="chart-box"><canvas id="subjectChart"></canvas></div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(!user || user.role !== 'teacher') window.location.href = '../login.html';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/teacher/students', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: user.username })
+                });
+                const data = await res.json();
+                
+                // 1. Attendance Distribution
+                const good = data.students.filter(s => s.attendance >= 75).length;
+                const bad = data.students.length - good;
+
+                new Chart(document.getElementById('attChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Good (>75%)', 'At Risk (<75%)'],
+                        datasets: [{ data: [good, bad], backgroundColor: ['#4CAF50', '#FF5722'], borderColor: 'transparent' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } } }
+                });
+
+                // 2. Class Averages
+                const subjects = ['math_marks', 'physics_marks', 'chemistry_marks', 'cs_marks', 'english_marks', 'pe_marks'];
+                const labels = ['Math', 'Physics', 'Chem', 'CS', 'Eng', 'PE'];
+                const averages = subjects.map(sub => {
+                    const total = data.students.reduce((sum, s) => sum + s[sub], 0);
+                    return Math.round(total / data.students.length) || 0;
+                });
+
+                new Chart(document.getElementById('subjectChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: 'Class Average %', data: averages, backgroundColor: '#FFD700', borderRadius: 5 }]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        scales: { y: { beginAtZero:true, max:100, ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } }
+                    }
+                });
+            } catch(e) { console.error(e); }
+        });
+    </script>
+</body>
+</html>

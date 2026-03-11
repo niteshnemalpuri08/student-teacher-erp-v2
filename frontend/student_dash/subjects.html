@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject Performance - Student Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Unchanged */
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .header { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; margin-bottom: 30px; text-align: center; }
+        .back-btn { background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; margin-bottom: 20px; transition: background 0.3s ease; font-family: 'Poppins', sans-serif; font-size: 14px; }
+        .back-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        .subjects-table-container { overflow-x: auto; background: rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 12px; }
+        .subjects-table { width: 100%; border-collapse: collapse; min-width: 700px; background: rgba(255, 255, 255, 0.03); }
+        .subjects-table thead th { text-align: left; padding: 12px 16px; font-weight: 700; font-size: 0.95em; color: #e6e6e6; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05); }
+        .subjects-table tbody td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; color: #fff; }
+        .subjects-table tbody tr:hover { background: rgba(255,255,255,0.05); transition: background 0.3s ease; }
+        .subject-name-cell { display: flex; align-items: center; gap: 12px; }
+        .grade-badge { padding: 6px 12px; border-radius: 12px; font-weight: 700; font-size: 0.85em; display: inline-block; text-align: center; min-width: 35px; }
+        .grade-badge.excellent { background: linear-gradient(135deg, #4CAF50, #45a049); box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3); }
+        .grade-badge.good { background: linear-gradient(135deg, #2196F3, #1976D2); box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3); }
+        .grade-badge.average { background: linear-gradient(135deg, #FF9800, #F57C00); box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3); }
+        .grade-badge.poor { background: linear-gradient(135deg, #f44336, #d32f2f); box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3); }
+        .trend-up { color: #4caf50; font-weight: 700; }
+        .trend-stable { color: #ffb300; font-weight: 700; }
+        .trend-down { color: #f44336; font-weight: 700; }
+        .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-card h3 { margin: 0 0 10px 0; font-size: 2em; font-weight: 700; }
+        .stat-card p { margin: 0; opacity: 0.9; font-size: 0.9em; }
+        @media (max-width: 720px) { .subjects-table { min-width: 600px; } .container { padding: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+
+        <div class="header">
+            <h1>📚 Subject Performance</h1>
+            <p>Track your performance across all subjects</p>
+        </div>
+
+        <div class="stats-summary" id="statsSummary">
+            </div>
+
+        <div class="subjects-table-container">
+            <table class="subjects-table" id="subjectsTable">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Overall Score</th>
+                        <th>Assignments</th>
+                        <th>Exams</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script src="student_common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 1. Fetch Consistent Data
+            const data = await STUDENT_COMMON.getAllData();
+
+            // 2. Render Summary Stats
+            renderStats(data.stats);
+
+            // 3. Render Table
+            renderSubjects(data.subjects);
+        });
+
+        function renderStats(stats) {
+            const statsSummary = document.getElementById('statsSummary');
+            statsSummary.innerHTML = `
+                <div class="stat-card">
+                    <h3>${stats.avgScore}%</h3>
+                    <p>Average Score</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${stats.overallAttendance}%</h3>
+                    <p>Average Attendance</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${stats.improvingCount}</h3>
+                    <p>Improving Subjects</p>
+                </div>
+            `;
+        }
+
+        function renderSubjects(subjects) {
+            const tbody = document.querySelector('#subjectsTable tbody');
+            tbody.innerHTML = '';
+
+            subjects.forEach(subject => {
+                const tr = document.createElement('tr');
+                const grade = STUDENT_COMMON.getGrade(subject.score);
+                const gradeClass = STUDENT_COMMON.getGradeClass(subject.score);
+                
+                // Handle missing assignment/exam data gracefully
+                const assignText = subject.assignments !== undefined ? subject.assignments + '%' : '-';
+                const examText = subject.exams !== undefined ? subject.exams + '%' : '-';
+                const trendHtml = getTrendHtml(subject.trend);
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="subject-name-cell">
+                            <span>${subject.name}</span>
+                            <span class="grade-badge ${gradeClass}">${grade}</span>
+                        </div>
+                    </td>
+                    <td>${subject.score}%</td>
+                    <td>${assignText}</td>
+                    <td>${examText}</td>
+                    <td>${trendHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getTrendHtml(trend) {
+            const map = {
+                'up': { text: '↗️ Improving', class: 'trend-up' },
+                'stable': { text: '➡️ Stable', class: 'trend-stable' },
+                'down': { text: '↘️ Declining', class: 'trend-down' }
+            };
+            const t = map[trend] || map['stable'];
+            return `<span class="${t.class}">${t.text}</span>`;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

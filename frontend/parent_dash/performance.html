@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child's Performance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; padding: 20px; margin: 0; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { background: rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 0.8em; }
+        .card { background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .marks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+        .mark-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; text-align: center; }
+        .mark-val { font-size: 1.5em; font-weight: bold; display: block; color: #FFD700; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📈 Performance Report</h2>
+            <a href="index.html" class="back-btn">Back</a>
+        </div>
+        <div class="card">
+            <h3>Subject Wise Marks</h3>
+            <div id="marksGrid" class="marks-grid">Loading...</div>
+        </div>
+        <div class="card" style="height: 300px;">
+            <canvas id="parentChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(!user) window.location.href = '../login.html';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/parent/child', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.username })
+                });
+                const data = await res.json();
+                
+                const subjects = [
+                    {n: 'Math', v: data.math}, {n: 'Phy', v: data.phy}, {n: 'Chem', v: data.chem},
+                    {n: 'CS', v: data.cs}, {n: 'Eng', v: data.eng}, {n: 'PE', v: data.pe}
+                ];
+
+                document.getElementById('marksGrid').innerHTML = subjects.map(s => `
+                    <div class="mark-item">
+                        <small>${s.n}</small>
+                        <span class="mark-val">${s.v}</span>
+                    </div>
+                `).join('');
+
+                new Chart(document.getElementById('parentChart'), {
+                    type: 'radar',
+                    data: {
+                        labels: subjects.map(s => s.n),
+                        datasets: [{
+                            label: 'Student Marks',
+                            data: subjects.map(s => s.v),
+                            backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                            borderColor: '#FFD700',
+                            pointBackgroundColor: '#FFD700'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { r: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: 'white' } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } catch(e) { console.error(e); }
+        });
+    </script>
+</body>
+</html>

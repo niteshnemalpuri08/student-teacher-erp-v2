@@ -1,0 +1,35 @@
+{
+  "name": "AI Student Attendance & Performance System",
+  "short_name": "GIET Portal",
+  "description": "AI-Powered Student Attendance and Performance Prediction System for GIET University.",
+  "start_url": "/login.html",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#764ba2",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2995/2995620.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2995/2995620.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": [
+    {
+      "src": "gietlogo.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpg",
+      "platform": "wide",
+      "label": "GIET University Portal Login"
+    }
+  ]
+}

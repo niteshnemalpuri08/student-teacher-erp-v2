@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Performance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; margin-bottom: 30px; text-align: center; position: relative; border: 1px solid rgba(255,255,255,0.1); }
+        .back-btn { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 0.9em; }
+        .dashboard-card { background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .subject-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; text-align: center; }
+        .score { font-size: 2em; font-weight: 700; color: #4caf50; display: block; margin: 10px 0; }
+        .rank-badge { background: #FFD700; color: #333; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Back</a>
+            <h1>📊 My Grades</h1>
+            <p style="margin-top:10px">Current Rank: <span class="rank-badge" id="rankDisplay">#--</span></p>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Subject Wise Marks</h3>
+            <div class="grid" id="marksGrid">Loading...</div>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Performance Curve</h3>
+            <div style="height:300px"><canvas id="marksChart"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(!user) window.location.href = '../login.html';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch(`/api/students/${user.username}`);
+                const data = await res.json();
+                
+                // Set Rank
+                document.getElementById('rankDisplay').textContent = `#${data.rank || 'N/A'}`;
+
+                const subjects = [
+                    { name: 'Mathematics', val: data.math_marks },
+                    { name: 'Physics', val: data.physics_marks },
+                    { name: 'Chemistry', val: data.chemistry_marks },
+                    { name: 'Comp. Sci', val: data.cs_marks },
+                    { name: 'English', val: data.english_marks },
+                    { name: 'Phys. Edu', val: data.pe_marks }
+                ];
+
+                document.getElementById('marksGrid').innerHTML = subjects.map(m => `
+                    <div class="subject-card">
+                        <h4>${m.name}</h4>
+                        <span class="score" style="color:${m.val<40?'#ff6b6b':'#4caf50'}">${m.val}</span>
+                    </div>`).join('');
+
+                new Chart(document.getElementById('marksChart'), {
+                    type: 'line',
+                    data: {
+                        labels: subjects.map(m => m.name),
+                        datasets: [{ 
+                            label: 'Marks', data: subjects.map(m => m.val), 
+                            borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', fill: true, tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color:'white'} }, x: { ticks: { color:'white'} } } }
+                });
+            } catch(e) { console.error(e); }
+        });
+    </script>
+</body>
+</html>

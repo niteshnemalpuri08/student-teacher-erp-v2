@@ -28,11 +28,10 @@ from predictor import predict_score
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-# We are telling Flask that the HTML files are in the current folder
-# Tell the server to look deep into that specific folder for HTML files
-# We are telling the server to look deep into your project folder for the HTML
-# Now we are telling Flask exactly where the new folder is
-app = Flask(__name__, static_folder='frontend', static_url_path='')
+# We are pointing directly to the folder that holds your login.html
+app = Flask(__name__, 
+            static_folder='AI-Powered Student Attendance', 
+            static_url_path='')
 
 # 🔥 RECTIFIED CORS: Critical for mobile-laptop cross-communication
 CORS(app, resources={r"/*": {"origins": "*"}}) 

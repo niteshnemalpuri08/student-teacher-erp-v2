@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Behavior</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; padding: 20px; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; text-decoration: none; }
+        .dashboard-card { background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 15px; margin-bottom: 25px; }
+        .record-item { background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 20px; border-left: 4px solid #4caf50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⭐ Behavior Report</h1>
+            <a href="index.html" class="back-btn">Back</a>
+        </div>
+        <p>Student: <strong id="studentNameDisplay">Loading...</strong></p>
+
+        <div class="dashboard-card">
+            <div style="height:300px"><canvas id="chart"></canvas></div>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Recent Remarks</h3>
+            <div id="records"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. AUTH GUARD
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'parent') window.location.href = '../login.html';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const res = await fetch('/api/parent/child', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.username })
+                });
+                const data = await res.json();
+                if(data.error) return;
+
+                document.getElementById('studentNameDisplay').textContent = data.child_name;
+
+                // Logic: High attendance = Good behavior
+                const good = data.attendance >= 80 ? 10 : 5;
+                const bad = data.attendance >= 80 ? 0 : 3;
+
+                new Chart(document.getElementById('chart'), {
+                    type: 'doughnut',
+                    data: { labels: ['Positive', 'Concerns'], datasets: [{ data: [good, bad], backgroundColor: ['#4caf50', '#f44336'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } } }
+                });
+
+                document.getElementById('records').innerHTML = data.attendance >= 80
+                    ? `<div class="record-item" style="border-color:#4caf50"><strong>Active Participation</strong><br>Very attentive in class.</div>`
+                    : `<div class="record-item" style="border-color:#f44336"><strong>Distracted</strong><br>Needs to focus more during lectures.</div>`;
+
+            } catch(e) { console.error(e); }
+        });
+    </script>
+</body>
+</html>

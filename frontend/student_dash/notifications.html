@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Student Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS STYLES --- */
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 { margin: 0 0 10px 0; font-size: 2em; }
+        .header p { margin: 0; opacity: 0.9; }
+
+        .notification-badge {
+            position: absolute; top: 20px; right: 20px;
+            background: #f44336; color: white;
+            border-radius: 50%; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+            display: none;
+        }
+
+        /* Controls */
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2); color: white;
+            border: none; padding: 10px 20px; border-radius: 25px;
+            cursor: pointer; margin-bottom: 20px;
+            transition: all 0.3s ease; font-family: 'Poppins', sans-serif; font-size: 14px;
+        }
+        .back-btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateX(-3px); }
+
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-bottom: 25px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 12px; text-align: center;
+        }
+        .stat-number { font-size: 2em; font-weight: 700; display: block; margin-bottom: 5px; }
+        .stat-label { font-size: 0.85em; opacity: 0.8; }
+
+        .controls-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; flex-wrap: wrap; gap: 15px;
+        }
+
+        .filter-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .filter-tab {
+            background: rgba(255, 255, 255, 0.1); color: white; border: none;
+            padding: 10px 20px; border-radius: 25px; cursor: pointer;
+            transition: all 0.3s ease; font-family: 'Poppins', sans-serif; font-size: 14px;
+        }
+        .filter-tab:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+        .filter-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-weight: 600; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .filter-tab .count {
+            background: rgba(255, 255, 255, 0.3); padding: 2px 8px;
+            border-radius: 10px; font-size: 0.85em; margin-left: 5px;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px; padding: 10px 20px;
+            color: white; font-family: 'Poppins', sans-serif; font-size: 14px;
+            outline: none; transition: all 0.3s ease; min-width: 250px;
+        }
+        .search-box:focus { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); }
+
+        .bulk-actions { display: flex; gap: 10px; }
+        .bulk-btn {
+            background: rgba(255, 255, 255, 0.15); color: white; border: none;
+            padding: 8px 16px; border-radius: 20px; cursor: pointer;
+            font-size: 0.9em; transition: all 0.3s ease; font-family: 'Poppins', sans-serif;
+        }
+        .bulk-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+        /* Notification Card */
+        .notification-card {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 25px; margin-bottom: 15px;
+            transition: all 0.3s ease; position: relative;
+            border: 2px solid transparent; cursor: pointer;
+        }
+        .notification-card.unread {
+            border-left: 5px solid #667eea; background: rgba(255, 255, 255, 0.15);
+        }
+        .notification-card:hover {
+            transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .notification-icon {
+            position: absolute; top: 20px; left: 20px;
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5em; background: rgba(255, 255, 255, 0.15);
+        }
+
+        .notification-content-wrapper { margin-left: 70px; }
+
+        .notification-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 12px; gap: 15px;
+        }
+        .notification-title { font-weight: 600; font-size: 1.15em; margin-bottom: 5px; flex: 1; }
+        
+        .notification-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .notification-time { opacity: 0.7; font-size: 0.85em; }
+
+        .type-badge { background: rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600; }
+        
+        .priority-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 700; text-transform: uppercase; }
+        .priority-high { background: #f44336; box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3); }
+        .priority-medium { background: #ff9800; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3); }
+        .priority-low { background: #4caf50; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3); }
+
+        .notification-content { margin-bottom: 15px; line-height: 1.6; opacity: 0.95; }
+
+        .notification-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 15px; padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.2); color: white; border: none;
+            padding: 8px 16px; border-radius: 20px; cursor: pointer;
+            font-size: 0.85em; transition: all 0.3s ease; font-family: 'Poppins', sans-serif;
+            margin-left: 5px;
+        }
+        .action-btn:hover { transform: scale(1.05); }
+        .action-btn.delete { background: rgba(244, 67, 54, 0.7); }
+        .action-btn.primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+        .empty-state { text-align: center; padding: 60px 20px; opacity: 0.7; }
+        .empty-state .icon { font-size: 5em; margin-bottom: 20px; }
+
+        /* Error/Debug Box */
+        .debug-error {
+            background: #ff4757; color: white; padding: 10px; 
+            border-radius: 8px; margin-bottom: 20px; display: none; text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .notification-icon { position: static; margin-bottom: 15px; }
+            .notification-content-wrapper { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+
+        <div class="header">
+            <h1>🔔 Notifications</h1>
+            <p>Stay updated with important announcements</p>
+            <div class="notification-badge" id="unreadBadge">0</div>
+        </div>
+
+        <div id="debugError" class="debug-error"></div>
+
+        <div class="stats-bar" id="statsBar"></div>
+
+        <div class="controls-bar">
+            <div class="filter-tabs" id="filterTabs"></div>
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search...">
+        </div>
+
+        <div class="controls-bar">
+            <div class="bulk-actions">
+                <button class="bulk-btn" onclick="markAllAsRead()">✓ Mark All Read</button>
+                <button class="bulk-btn" onclick="clearRead()">🗑️ Clear Read</button>
+            </div>
+        </div>
+
+        <div id="notificationsContainer">
+            <div class="empty-state">
+                <div class="loading">Loading notifications...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script src="student_common.js"></script>
+    
+    <script>
+        // --- STATE ---
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let currentUser = null;
+        let notifications = [];
+
+        // --- MAIN INIT ---
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Safety Check: Does authManager exist?
+            if (typeof authManager === 'undefined') {
+                showError("Error: auth.js not found. Check file structure.");
+                return;
+            }
+
+            // 1. Get User
+            const user = authManager.getUser();
+            if (user) {
+                currentUser = user;
+            } else {
+                console.warn("No user logged in. Using Demo User.");
+                currentUser = { username: 'demo', roll: '24cse001', role: 'student' };
+            }
+
+            // 2. Load Data
+            await loadNotifications();
+
+            // 3. Render
+            setupSearch();
+            renderUI();
+        });
+
+        async function loadNotifications() {
+            // Safe Mode: If no token, do NOT call API (prevents redirect loop)
+            if (!authManager.getUser()) {
+                console.log("Safe Mode: Loading Demo Data");
+                loadDemoData();
+                return;
+            }
+
+            try {
+                const studentId = currentUser.roll || currentUser.username;
+                const response = await authManager.apiCall(`/api/notifications?user_type=student&student_roll=${studentId}`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    notifications = data.map(n => ({
+                        id: n.id,
+                        title: n.title,
+                        content: n.content,
+                        time: n.time || new Date(n.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        timestamp: new Date(n.created_at).getTime(),
+                        type: n.type || 'general',
+                        priority: n.priority || 'medium',
+                        read: n.read,
+                        icon: getIconForType(n.type)
+                    }));
+                } else {
+                    console.warn("API returned error, falling back to demo.");
+                    loadDemoData();
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                loadDemoData();
+            }
+        }
+
+        function loadDemoData() {
+            notifications = [
+                { id: 1, title: 'Mathematics Exam Result 🎉', content: 'You scored 92% on your Mathematics exam.', time: '2 hours ago', timestamp: Date.now(), type: 'academic', priority: 'high', read: false, icon: '📐' },
+                { id: 2, title: 'Assignment Reminder', content: 'Physics Lab Report due tomorrow.', time: '5 hours ago', timestamp: Date.now() - 10000, type: 'assignment', priority: 'high', read: false, icon: '📚' },
+                { id: 3, title: 'Attendance Achievement', content: 'You reached 95% attendance!', time: '1 day ago', timestamp: Date.now() - 86400000, type: 'achievement', priority: 'medium', read: true, icon: '🏆' },
+                { id: 4, title: 'System Maintenance', content: 'The portal will be down for maintenance on Sunday.', time: '2 days ago', timestamp: Date.now() - 172800000, type: 'system', priority: 'low', read: true, icon: '⚙️' }
+            ];
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderUI() {
+            updateStats();
+            renderFilterTabs();
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            let filtered = notifications;
+
+            if (currentFilter !== 'all') {
+                filtered = currentFilter === 'unread' ? 
+                    notifications.filter(n => !n.read) : 
+                    notifications.filter(n => n.type === currentFilter);
+            }
+
+            if (searchQuery) {
+                filtered = filtered.filter(n => 
+                    n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    n.content.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
+
+            filtered.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <h3>No notifications found</h3>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach(n => {
+                const card = document.createElement('div');
+                card.className = `notification-card ${!n.read ? 'unread' : ''}`;
+                card.onclick = (e) => { if (!e.target.closest('button')) markAsRead(n.id); };
+                
+                card.innerHTML = `
+                    <div class="notification-icon">${n.icon}</div>
+                    <div class="notification-content-wrapper">
+                        <div class="notification-header">
+                            <div style="width:100%">
+                                <div class="notification-title">${n.title}</div>
+                                <div class="notification-meta">
+                                    <span class="notification-time">🕐 ${n.time}</span>
+                                    <span class="type-badge">${n.type}</span>
+                                    <span class="priority-badge priority-${n.priority}">${n.priority}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notification-content">${n.content}</div>
+                        <div class="notification-footer">
+                            <div class="notification-actions">
+                                ${!n.read ? `<button class="action-btn primary" onclick="event.stopPropagation(); markAsRead(${n.id})">✓ Mark Read</button>` : ''}
+                                <button class="action-btn delete" onclick="event.stopPropagation(); deleteNotification(${n.id})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            const total = notifications.length;
+            const unread = notifications.filter(n => !n.read).length;
+            const high = notifications.filter(n => n.priority === 'high' && !n.read).length;
+
+            const badge = document.getElementById('unreadBadge');
+            badge.textContent = unread;
+            badge.style.display = unread > 0 ? 'flex' : 'none';
+
+            document.getElementById('statsBar').innerHTML = `
+                <div class="stat-item"><span class="stat-number">${total}</span><span class="stat-label">Total</span></div>
+                <div class="stat-item"><span class="stat-number">${unread}</span><span class="stat-label">Unread</span></div>
+                <div class="stat-item"><span class="stat-number">${high}</span><span class="stat-label">High Priority</span></div>
+            `;
+        }
+
+        function renderFilterTabs() {
+            const uniqueTypes = ['all', 'unread', ...new Set(notifications.map(n => n.type))];
+            const container = document.getElementById('filterTabs');
+            container.innerHTML = '';
+
+            uniqueTypes.forEach(key => {
+                let count = 0;
+                if (key === 'all') count = notifications.length;
+                else if (key === 'unread') count = notifications.filter(n => !n.read).length;
+                else count = notifications.filter(n => n.type === key).length;
+
+                const tab = document.createElement('button');
+                tab.className = `filter-tab ${currentFilter === key ? 'active' : ''}`;
+                tab.innerHTML = `${capitalize(key)} <span class="count">${count}</span>`;
+                tab.onclick = () => { currentFilter = key; renderFilterTabs(); renderNotifications(); };
+                container.appendChild(tab);
+            });
+        }
+
+        // --- ACTIONS ---
+        async function markAsRead(id) {
+            const n = notifications.find(x => x.id === id);
+            if (n && !n.read) {
+                n.read = true;
+                renderUI();
+                if (authManager.getUser()) {
+                    try { await authManager.apiCall(`/api/notifications/${id}/read`, { method: 'PATCH', body: JSON.stringify({read: true}) }); } catch(e) {}
+                }
+            }
+        }
+
+        async function markAllAsRead() {
+            if (!confirm('Mark all as read?')) return;
+            notifications.forEach(n => n.read = true);
+            renderUI();
+            if (authManager.getUser()) {
+                try { await authManager.apiCall(`/api/notifications/mark-all-read`, { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
+            }
+        }
+
+        async function deleteNotification(id) {
+            if (!confirm('Delete?')) return;
+            notifications = notifications.filter(n => n.id !== id);
+            renderUI();
+            if (authManager.getUser()) {
+                try { await authManager.apiCall(`/api/notifications/${id}`, { method: 'DELETE' }); } catch(e) {}
+            }
+        }
+
+        async function clearRead() {
+            if (!confirm('Clear read?')) return;
+            notifications = notifications.filter(n => !n.read);
+            renderUI();
+            if (authManager.getUser()) {
+                try { await authManager.apiCall(`/api/notifications/bulk-delete`, { method: 'POST', body: JSON.stringify({}) }); } catch(e) {}
+            }
+        }
+
+        // --- UTILS ---
+        function setupSearch() {
+            document.getElementById('searchBox').addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                renderNotifications();
+            });
+        }
+        function getIconForType(type) {
+            const map = { 'academic': '📐', 'assignment': '📚', 'achievement': '🏆', 'system': '⚙️', 'general': '📢' };
+            return map[type] || '🔔';
+        }
+        function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+        function goBack() { window.history.back(); }
+        function showError(msg) {
+            const el = document.getElementById('debugError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
