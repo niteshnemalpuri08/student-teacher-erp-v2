@@ -30,7 +30,10 @@ from reportlab.pdfgen import canvas
 
 # We are telling Flask that the HTML files are in the current folder
 # Tell the server to look deep into that specific folder for HTML files
-app = Flask(__name__, static_folder='AI-Powered Student Attendance/final_complete_project', static_url_path='')
+# We are telling the server to look deep into your project folder for the HTML
+app = Flask(__name__, 
+            static_folder='AI-Powered Student Attendance/final_complete_project', 
+            static_url_path='')
 
 # 🔥 RECTIFIED CORS: Critical for mobile-laptop cross-communication
 CORS(app, resources={r"/*": {"origins": "*"}}) 
