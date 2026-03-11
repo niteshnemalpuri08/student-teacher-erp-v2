@@ -28,7 +28,8 @@ from predictor import predict_score
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-app = Flask(__name__, static_folder='../frontend', static_url_path='')
+# We are telling Flask that the HTML files are in the current folder
+app = Flask(__name__, static_folder='.', static_url_path='')
 
 # 🔥 RECTIFIED CORS: Critical for mobile-laptop cross-communication
 CORS(app, resources={r"/*": {"origins": "*"}}) 
@@ -405,7 +406,7 @@ def repair_data():
     return "✅ Data Repaired"
 
 @app.route('/')
-def serve_index(): return send_from_directory(app.static_folder, 'login.html')
+def serve_index(): return send_from_directory('frontend', 'login.html')
 
 @app.route('/<path:path>')
 def serve_static(path): return send_from_directory(app.static_folder, path)
